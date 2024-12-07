@@ -8,6 +8,9 @@ Here is the link of Emojis - "https://emojis-bay.vercel.app/"
 
 Here is the link of Meme_templates - "https://memetemplatescom.vercel.app/"
 
-
 Here is the link of Users_Details - "https://usersdetailscom.vercel.app/"
+
+Here is the link of Receipes_data - "https://receipescom.vercel.app/"
+
+
 
