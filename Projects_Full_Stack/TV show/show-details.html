@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TV Show Details</title>
+    <style>
+        :root {
+            --primary-bg: #1a1a2e;
+            --secondary-bg: #16213e;
+            --accent-color: #4fb8ff;
+            --text-color: #e0e0e0;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: var(--primary-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .details-container {
+            display: flex;
+            background-color: var(--secondary-bg);
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .show-poster {
+            flex: 1;
+            margin-right: 30px;
+        }
+        
+        .show-poster img {
+            max-width: 100%;
+            border-radius: 10px;
+        }
+        
+        .show-info {
+            flex: 2;
+        }
+        
+        .show-info h1 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        
+        .show-meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        
+        .error-message {
+            color: #ff6b6b;
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="show-details-container">
+            <!-- Show details will be dynamically loaded here -->
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const showId = urlParams.get('id');
+
+            if (!showId) {
+                showErrorMessage('No show ID provided');
+                return;
+            }
+
+            fetch(`https://api.tvmaze.com/shows/${showId}?embed[]=seasons&embed[]=cast`)
+                .then(response => response.json())
+                .then(show => {
+                    const detailsContainer = document.getElementById('show-details-container');
+                    
+                    const imageUrl = show.image 
+                        ? (show.image.original || show.image.medium) 
+                        : 'https://via.placeholder.com/300x450?text=No+Image';
+
+                    const summary = show.summary
+                        ? show.summary.replace(/<\/?[^>]+(>|$)/g, '')
+                        : 'No description available.';
+
+                    const castList = show._embedded.cast
+                        .slice(0, 5)
+                        .map(cast => cast.person.name)
+                        .join(', ');
+
+                    detailsContainer.innerHTML = `
+                        <div class="details-container">
+                            <div class="show-poster">
+                                <img src="${imageUrl}" alt="${show.name}">
+                            </div>
+                            <div class="show-info">
+                                <h1>${show.name}</h1>
+                                <div class="show-meta">
+                                    <p><strong>Premiered:</strong> ${show.premiered || 'N/A'}</p>
+                                    <p><strong>Status:</strong> ${show.status}</p>
+                                    <p><strong>Rating:</strong> ${show.rating.average || 'N/A'}/10</p>
+                                </div>
+                                <h2>Summary</h2>
+                                <p>${summary}</p>
+                                <h2>Cast</h2>
+                                <p>${castList}</p>
+                                <h2>Genres</h2>
+                                <p>${show.genres.join(', ')}</p>
+                            </div>
+                        </div>
+                    `;
+                })
+                .catch(error => {
+                    console.error('Error fetching show details:', error);
+                    showErrorMessage('Failed to load show details');
+                });
+
+            function showErrorMessage(message) {
+                const detailsContainer = document.getElementById('show-details-container');
+                detailsContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>${message}</p>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>
